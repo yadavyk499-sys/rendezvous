@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Rendezvous — Meet Smarter</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg:#0a0a0f; --sf:#13131a; --sf2:#1c1c26;
@@ -16,283 +17,227 @@
   --pu:#a855f7; --pdm:rgba(168,85,247,.12);
   --go:#f5c542; --ydm:rgba(245,197,66,.12);
 }
-* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent }
-body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); min-height:100vh; overflow-x:hidden }
-::-webkit-scrollbar { width:3px } ::-webkit-scrollbar-thumb { background:var(--bd2); border-radius:3px }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Mulish',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+.scr{display:none;min-height:100vh;flex-direction:column}.scr.on{display:flex}
+.topbar{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:rgba(10,10,15,.94);backdrop-filter:blur(12px);z-index:100}
+.bkbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bd2);background:var(--sf);color:var(--tx);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .2s;flex-shrink:0}
+.bkbtn:hover{border-color:var(--tx);background:var(--sf2)}
+.tblogo{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.5px}
+.tblogo em{color:var(--ac);font-style:italic}
+.tbr{margin-left:auto;font-size:11px;color:var(--mu)}
+.wrap{flex:1;width:100%;max-width:520px;margin:0 auto;padding:24px 16px 56px;display:flex;flex-direction:column;gap:20px}
+.wwide{flex:1;width:100%;max-width:720px;margin:0 auto;padding:24px 16px 56px;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:20px}
+.ctitle{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu2);margin-bottom:15px;display:flex;align-items:center;gap:7px}
+.ci{width:25px;height:25px;background:var(--adm);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.ig{margin-bottom:13px}.ig:last-child{margin-bottom:0}
+.il{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;display:block}
+.ifield{width:100%;background:var(--sf2);border:1.5px solid var(--bd);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;color:var(--tx);outline:none;transition:border-color .2s,box-shadow .2s}
+.ifield:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--agl)}
+.ifield::placeholder{color:var(--mu)}
+.ifield[type=time]{color-scheme:dark;cursor:pointer}
+.irow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.tbtn{background:var(--sf2);border:1.5px solid var(--bd);border-radius:10px;padding:10px 4px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tbtn .ti{font-size:20px;line-height:1}.tbtn .tl{font-size:9px;font-weight:600;letter-spacing:.5px;color:var(--mu);text-transform:uppercase}
+.tbtn.on{background:var(--adm);border-color:var(--ac)}.tbtn.on .tl{color:var(--ac)}
+.vwrap{display:flex;flex-wrap:wrap;gap:7px}
+.vchip{padding:7px 13px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:40px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;user-select:none}
+.vchip.on{background:var(--adm);border-color:var(--ac);color:var(--ac)}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.btnp{width:100%;padding:15px;background:var(--ac);color:#fff;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btnp:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,53,.35)}
+.btnp:active{transform:none}.btnp:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btns{width:100%;padding:13px;background:transparent;color:var(--tx);border:1.5px solid var(--bd2);border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btns:hover{border-color:var(--tx);background:var(--sf2)}
 
-/* SCREENS */
-.scr { display:none; min-height:100vh; flex-direction:column }
-.scr.on { display:flex }
+/* HOME */
+#s-home{background:radial-gradient(ellipse 80% 50% at 50% -5%,rgba(255,107,53,.14) 0%,transparent 60%),var(--bg)}
+.hero{text-align:center;padding:32px 0 6px}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(36px,9vw,52px);line-height:1;letter-spacing:-1px}
+.hero h1 em{color:var(--ac);font-style:italic}
+.hero p{font-size:13px;color:var(--mu2);margin-top:10px;line-height:1.6;max-width:320px;margin-inline:auto}
+.newbtn{width:100%;padding:17px;background:var(--ac);color:#fff;border:none;border-radius:16px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:10px}
+.newbtn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,107,53,.35)}
+.seclbl{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);display:flex;align-items:center;gap:10px}
+.seclbl::after{content:'';flex:1;height:1px;background:var(--bd)}
+.plancard{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.plancard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--bd2);transition:background .2s}
+.plancard:hover{border-color:var(--bd2);transform:translateX(2px)}
+.plancard:hover::before{background:var(--ac)}
+.plancard.pw::before{background:var(--go);animation:glow 2s infinite}
+.plancard.pr::before{background:var(--gn)}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.3}}
+.pctop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.pcname{font-family:'Instrument Serif',serif;font-size:16px;line-height:1.2}
+.pcbadge{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:4px;flex-shrink:0}
+.pcbadge.w{background:var(--ydm);color:var(--go)}.pcbadge.r{background:var(--gdm);color:var(--gn)}
+.pcmeta{font-size:11px;color:var(--mu2);margin-bottom:6px}
+.emptyplans{text-align:center;padding:32px 20px;background:var(--sf);border:1px dashed var(--bd2);border-radius:16px}
+.emptyplans .eico{font-size:40px;margin-bottom:12px;opacity:.5}
+.emptyplans p{font-size:13px;color:var(--mu2);line-height:1.6}
 
-/* TOPBAR */
-.topbar { display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--bd); position:sticky; top:0; background:rgba(10,10,15,.94); backdrop-filter:blur(12px); z-index:100 }
-.bkbtn { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--bd2); background:var(--sf); color:var(--tx); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:17px; transition:all .2s; flex-shrink:0 }
-.bkbtn:hover { border-color:var(--tx); background:var(--sf2) }
-.tblogo { font-family:'Instrument Serif',serif; font-size:20px; letter-spacing:-.5px }
-.tblogo em { color:var(--ac); font-style:italic }
-.tbr { margin-left:auto; font-size:11px; color:var(--mu) }
+/* HOST */
+#s-host{background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(255,107,53,.1) 0%,transparent 55%),var(--bg)}
+.formhd{text-align:center}
+.formhd h2{font-family:'Instrument Serif',serif;font-size:clamp(26px,6vw,34px);letter-spacing:-.5px}
+.formhd h2 em{color:var(--ac);font-style:italic}
+.formhd p{font-size:13px;color:var(--mu2);margin-top:6px}
 
-/* WRAP */
-.wrap { flex:1; width:100%; max-width:520px; margin:0 auto; padding:24px 16px 56px; display:flex; flex-direction:column; gap:20px }
-.wwide { flex:1; width:100%; max-width:720px; margin:0 auto; padding:24px 16px 56px; display:flex; flex-direction:column; gap:18px }
+/* WAITING */
+#s-waiting{background:radial-gradient(ellipse 60% 45% at 50% 0%,rgba(54,200,122,.1) 0%,transparent 55%),var(--bg)}
+.sharehero{text-align:center;padding:14px 0 4px}
+.shareanim{font-size:50px;animation:pop .5s cubic-bezier(.34,1.56,.64,1);display:block;margin-bottom:8px}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.sharehero h2{font-family:'Instrument Serif',serif;font-size:clamp(22px,6vw,30px);line-height:1.2}
+.sharehero h2 em{color:var(--gn);font-style:italic}
+.sharehero p{font-size:13px;color:var(--mu2);margin-top:7px;line-height:1.6}
+.urlbox{display:flex;align-items:center;gap:8px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:10px;padding:11px 13px;margin-bottom:12px}
+.urltext{flex:1;font-size:11px;color:var(--mu2);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.copybtn{flex-shrink:0;padding:6px 13px;background:var(--adm);color:var(--ac);border:1px solid var(--ac);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s}
+.copybtn:hover{background:var(--ac);color:#fff}.copybtn.done{background:var(--gn);border-color:var(--gn);color:#fff}
+.smethods{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.smbtn{padding:11px 7px;border-radius:8px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;text-align:center;transition:all .2s;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--tx)}
+.smbtn:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.progwrap{margin-bottom:4px}
+.progbar{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0}
+.progfill{height:100%;background:var(--gn);border-radius:6px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.progtxt{display:flex;justify-content:space-between;font-size:11px;color:var(--mu2)}
+.livepill{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--sf2);border:1px solid var(--bd);border-radius:10px}
+.lpulse{width:8px;height:8px;border-radius:50%;background:var(--gn);animation:blink 1.4s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ltxt{font-size:13px;color:var(--mu2);flex:1}
+.slots{display:flex;flex-direction:column;gap:7px}
+.slot{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;transition:all .3s}
+.slot.joined{border-color:rgba(54,200,122,.3)}
+.slotav{width:33px;height:33px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0}
+.slotinfo{flex:1;min-width:0}
+.slotnm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slotdt{font-size:10px;color:var(--mu);margin-top:1px}
+.slotst{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;letter-spacing:.3px}
+.sst-ok{background:var(--gdm);color:var(--gn)}.sst-pend{background:var(--sf);color:var(--mu);border:1px solid var(--bd)}
 
-/* CARD */
-.card { background:var(--sf); border:1px solid var(--bd); border-radius:16px; padding:20px }
-.ctitle { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--mu2); margin-bottom:15px; display:flex; align-items:center; gap:7px }
-.ci { width:25px; height:25px; background:var(--adm); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0 }
+/* FRIEND */
+#s-friend{background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(74,158,255,.1) 0%,transparent 55%),var(--bg)}
+.invbanner{background:linear-gradient(135deg,rgba(74,158,255,.12),rgba(74,158,255,.04));border:1px solid rgba(74,158,255,.25);border-radius:16px;padding:15px 17px;display:flex;align-items:center;gap:12px}
+.invav{width:42px;height:42px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:17px;flex-shrink:0}
+.invttl{font-weight:600;font-size:14px}.invsub{font-size:12px;color:var(--mu2);margin-top:3px;line-height:1.4}
 
-/* INPUTS */
-.ig { margin-bottom:13px } .ig:last-child { margin-bottom:0 }
-.il { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--mu); margin-bottom:6px; display:block }
-.ifield { width:100%; background:var(--sf2); border:1.5px solid var(--bd); border-radius:10px; padding:11px 13px; font-family:'Mulish',sans-serif; font-size:14px; color:var(--tx); outline:none; transition:border-color .2s, box-shadow .2s }
-.ifield:focus { border-color:var(--ac); box-shadow:0 0 0 3px var(--agl) }
-.ifield::placeholder { color:var(--mu) }
-.ifield[type=time] { color-scheme:dark; cursor:pointer }
-.irow { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+/* RESULTS */
+#s-results{background:var(--bg)}
+.herocard{background:linear-gradient(135deg,var(--sf),var(--sf2));border:1px solid var(--bd);border-radius:16px;padding:22px;text-align:center;position:relative;overflow:hidden}
+.herocard::before{content:'';position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:200px;height:80px;background:var(--ac);filter:blur(70px);opacity:.11}
+.hczone{font-family:'Instrument Serif',serif;font-size:clamp(24px,7vw,38px);line-height:1.1;margin-bottom:5px}
+.hczone em{color:var(--ac);font-style:italic}
+.hcsub{font-size:12px;color:var(--mu2);margin-bottom:16px}
+.hcstats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);border-radius:10px;overflow:hidden}
+.hcstat{background:var(--sf);padding:12px 7px;text-align:center}
+.hcval{font-family:'Syne',sans-serif;font-size:clamp(16px,4vw,21px);font-weight:700}
+.hclbl{font-size:9px;color:var(--mu);margin-top:3px;letter-spacing:.5px;text-transform:uppercase}
+.hcsub2{font-size:9px;color:var(--mu)}
+.ccards{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ccard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px}
+.cchd{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.ccdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ccnm{font-size:13px;font-weight:600}
+.cctrans{display:flex;align-items:center;gap:5px;padding:4px 8px;background:var(--sf2);border-radius:5px;font-size:11px;color:var(--mu2);margin-bottom:7px}
+.ccrow{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd);font-size:11px}
+.ccrow:last-child{border-bottom:none}
+.ccrow .rl{color:var(--mu)}.ccrow .rv{font-weight:600}
+.aibox{background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(168,85,247,.02));border:1px solid rgba(168,85,247,.22);border-radius:16px;padding:15px 17px;display:flex;gap:12px}
+.aigem{width:33px;height:33px;background:var(--pdm);border:1px solid rgba(168,85,247,.3);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ailbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--pu);margin-bottom:5px}
+.aitxt{font-size:12px;line-height:1.7;color:var(--mu2)}.aitxt strong{color:var(--tx)}
+.sectitle{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu);display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.sectitle::after{content:'';flex:1;height:1px;background:var(--bd)}
+.places{display:flex;flex-direction:column;gap:9px}
+.plcard{background:var(--sf);border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s;animation:rise .4s ease both}
+.plcard:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.plcard:nth-child(1){animation-delay:.08s}.plcard:nth-child(2){animation-delay:.15s}.plcard:nth-child(3){animation-delay:.22s}.plcard:nth-child(4){animation-delay:.29s}
+.plcin{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:start;padding:14px}
+.plem{width:64px;height:64px;background:var(--sf2);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
+.plbd{min-width:0}
+.plhd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px}
+.plnm{font-family:'Instrument Serif',serif;font-size:17px;line-height:1.2}
+.badge{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.bfi{background:rgba(255,107,53,.15);color:var(--ac)}.bst{background:var(--ydm);color:var(--go)}.bnw{background:var(--gdm);color:var(--gn)}.bgm{background:var(--bdm);color:var(--bl)}
+.plcu{font-size:11px;color:var(--mu2);margin-bottom:7px}
+.plt{display:flex;gap:5px;flex-wrap:wrap}
+.ptc{display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;background:var(--sf2);border:1px solid var(--bd)}
+.ptd{width:5px;height:5px;border-radius:50%}
+.plr{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.plrt{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;gap:2px}
+.plrt .star{color:var(--go);font-size:11px}
+.plpr{font-size:11px;color:var(--mu)}
+.svbtn{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.svbtn:hover{border-color:var(--ac)}.svbtn.saved{background:var(--adm);border-color:var(--ac)}
+.pltgs{padding:8px 14px;border-top:1px solid var(--bd);display:flex;gap:5px;flex-wrap:wrap}
+.ptag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--sf2);color:var(--mu2);border:1px solid var(--bd)}
+.resacts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.rabtn{padding:13px;border-radius:10px;border:1.5px solid var(--bd2);background:var(--sf);color:var(--tx);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.rabtn:hover{background:var(--sf2);border-color:var(--tx)}
+.rabtn.hi{background:var(--ac);border-color:var(--ac);color:#fff}
+.rabtn.hi:hover{box-shadow:0 4px 20px rgba(255,107,53,.3)}
 
-/* TRANSPORT */
-.tgrid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px }
-.tbtn { background:var(--sf2); border:1.5px solid var(--bd); border-radius:10px; padding:10px 4px; cursor:pointer; transition:all .2s; display:flex; flex-direction:column; align-items:center; gap:4px }
-.tbtn .ti { font-size:20px; line-height:1 } .tbtn .tl { font-size:9px; font-weight:600; letter-spacing:.5px; color:var(--mu); text-transform:uppercase }
-.tbtn.on { background:var(--adm); border-color:var(--ac) } .tbtn.on .tl { color:var(--ac) }
-
-/* VIBES */
-.vwrap { display:flex; flex-wrap:wrap; gap:7px }
-.vchip { padding:7px 13px; background:var(--sf2); border:1.5px solid var(--bd); border-radius:40px; font-size:12px; font-weight:500; cursor:pointer; transition:all .2s; user-select:none }
-.vchip.on { background:var(--adm); border-color:var(--ac); color:var(--ac) }
-
-/* BUDGET */
-.bgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px }
-
-/* BUTTONS */
-.btnp { width:100%; padding:15px; background:var(--ac); color:#fff; border:none; border-radius:10px; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:8px }
-.btnp:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,107,53,.35) }
-.btnp:active { transform:none }
-.btns { width:100%; padding:13px; background:transparent; color:var(--tx); border:1.5px solid var(--bd2); border-radius:10px; font-family:'Syne',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px }
-.btns:hover { border-color:var(--tx); background:var(--sf2) }
-
-/* ── HOME ── */
-#s-home { background:radial-gradient(ellipse 80% 50% at 50% -5%, rgba(255,107,53,.14) 0%, transparent 60%), var(--bg) }
-.hero { text-align:center; padding:32px 0 6px }
-.hero h1 { font-family:'Instrument Serif',serif; font-size:clamp(36px,9vw,52px); line-height:1; letter-spacing:-1px }
-.hero h1 em { color:var(--ac); font-style:italic }
-.hero p { font-size:13px; color:var(--mu2); margin-top:10px; line-height:1.6; max-width:320px; margin-inline:auto }
-.newbtn { width:100%; padding:17px; background:var(--ac); color:#fff; border:none; border-radius:16px; font-family:'Syne',sans-serif; font-size:16px; font-weight:700; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:10px }
-.newbtn:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(255,107,53,.35) }
-.seclbl { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--mu); display:flex; align-items:center; gap:10px }
-.seclbl::after { content:''; flex:1; height:1px; background:var(--bd) }
-
-/* PLAN CARDS */
-.plancard { background:var(--sf); border:1px solid var(--bd); border-radius:16px; padding:16px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden }
-.plancard::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--bd2); transition:background .2s }
-.plancard:hover { border-color:var(--bd2); transform:translateX(2px) }
-.plancard:hover::before { background:var(--ac) }
-.plancard.pw::before { background:var(--go); animation:glow 2s infinite }
-.plancard.pr::before { background:var(--gn) }
-@keyframes glow { 0%,100%{opacity:1} 50%{opacity:.3} }
-.pctop { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px }
-.pcname { font-family:'Instrument Serif',serif; font-size:16px; line-height:1.2 }
-.pcbadge { font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:3px 8px; border-radius:4px; flex-shrink:0 }
-.pcbadge.w { background:var(--ydm); color:var(--go) } .pcbadge.r { background:var(--gdm); color:var(--gn) }
-.pcmeta { font-size:11px; color:var(--mu2); margin-bottom:10px }
-.pcpeople { display:flex; gap:7px; flex-wrap:wrap }
-.pcperson { display:flex; align-items:center; gap:4px; padding:3px 9px; background:var(--sf2); border:1px solid var(--bd); border-radius:20px; font-size:10px; font-weight:600 }
-.pcdot { width:6px; height:6px; border-radius:50% }
-.pcacts { display:flex; gap:7px; margin-top:11px; padding-top:11px; border-top:1px solid var(--bd); flex-wrap:wrap }
-.pcact { padding:5px 12px; background:var(--sf2); border:1px solid var(--bd); border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; color:var(--mu2); transition:all .2s; font-family:'Mulish',sans-serif }
-.pcact:hover { border-color:var(--bd2); color:var(--tx) }
-.pcact.hi { background:var(--adm); color:var(--ac); border-color:var(--ac) }
-.pcact.red:hover { border-color:rgba(255,80,80,.5); color:#ff5050; background:rgba(255,80,80,.08) }
-.emptyplans { text-align:center; padding:32px 20px; background:var(--sf); border:1px dashed var(--bd2); border-radius:16px }
-.emptyplans .eico { font-size:40px; margin-bottom:12px; opacity:.5 }
-.emptyplans p { font-size:13px; color:var(--mu2); line-height:1.6 }
-
-/* ── HOST FORM ── */
-#s-host { background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,107,53,.1) 0%, transparent 55%), var(--bg) }
-.formhd { text-align:center }
-.formhd h2 { font-family:'Instrument Serif',serif; font-size:clamp(26px,6vw,34px); letter-spacing:-.5px }
-.formhd h2 em { color:var(--ac); font-style:italic }
-.formhd p { font-size:13px; color:var(--mu2); margin-top:6px }
-
-/* ── SHARE ── */
-#s-share { background:radial-gradient(ellipse 60% 45% at 50% 0%, rgba(54,200,122,.1) 0%, transparent 55%), var(--bg) }
-.sharehero { text-align:center; padding:14px 0 4px }
-.shareanim { font-size:50px; animation:pop .5s cubic-bezier(.34,1.56,.64,1); display:block; margin-bottom:8px }
-@keyframes pop { from{transform:scale(.4);opacity:0} to{transform:scale(1);opacity:1} }
-.sharehero h2 { font-family:'Instrument Serif',serif; font-size:clamp(22px,6vw,30px); line-height:1.2 }
-.sharehero h2 em { color:var(--gn); font-style:italic }
-.sharehero p { font-size:13px; color:var(--mu2); margin-top:7px; line-height:1.6 }
-
-/* URL BOX */
-.urlbox { display:flex; align-items:center; gap:8px; background:var(--sf2); border:1.5px solid var(--bd); border-radius:10px; padding:11px 13px; margin-bottom:12px }
-.urltext { flex:1; font-size:11px; color:var(--mu2); font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-.copybtn { flex-shrink:0; padding:6px 13px; background:var(--adm); color:var(--ac); border:1px solid var(--ac); border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif; transition:all .2s }
-.copybtn:hover { background:var(--ac); color:#fff }
-.copybtn.done { background:var(--gn); border-color:var(--gn); color:#fff }
-
-/* SHARE METHODS */
-.smethods { display:grid; grid-template-columns:repeat(3,1fr); gap:9px }
-.smbtn { padding:11px 7px; border-radius:8px; border:1.5px solid var(--bd); background:var(--sf2); cursor:pointer; text-align:center; transition:all .2s; font-size:11px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--tx) }
-.smbtn:hover { border-color:var(--bd2); transform:translateY(-1px) }
-
-/* PERSON SLOTS */
-.livepill { display:flex; align-items:center; gap:8px; padding:11px 14px; background:var(--sf2); border:1px solid var(--bd); border-radius:10px }
-.lpulse { width:8px; height:8px; border-radius:50%; background:var(--gn); animation:blink 1.4s infinite; flex-shrink:0 }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-.ltxt { font-size:13px; color:var(--mu2); flex:1 }
-.ltxt strong { color:var(--tx) }
-.slots { display:flex; flex-direction:column; gap:7px }
-.slot { display:flex; align-items:center; gap:10px; padding:11px 13px; background:var(--sf2); border:1px solid var(--bd); border-radius:10px; transition:all .3s }
-.slot.joined { border-color:rgba(54,200,122,.3) }
-.slotav { width:33px; height:33px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'Syne',sans-serif; flex-shrink:0 }
-.slotinfo { flex:1; min-width:0 }
-.slotnm { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-.slotdt { font-size:10px; color:var(--mu); margin-top:1px }
-.slotst { font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; flex-shrink:0; letter-spacing:.3px }
-.sst-ok { background:var(--gdm); color:var(--gn) }
-.sst-pend { background:var(--sf); color:var(--mu); border:1px solid var(--bd) }
-.rmslot { width:24px; height:24px; border-radius:50%; border:1px solid var(--bd); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--mu); transition:all .2s; flex-shrink:0 }
-.rmslot:hover { border-color:rgba(255,80,80,.5); color:#ff5050; background:rgba(255,80,80,.08) }
-
-/* ── FRIEND FORM ── */
-#s-friend { background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(74,158,255,.1) 0%, transparent 55%), var(--bg) }
-.invbanner { background:linear-gradient(135deg,rgba(74,158,255,.12),rgba(74,158,255,.04)); border:1px solid rgba(74,158,255,.25); border-radius:16px; padding:15px 17px; display:flex; align-items:center; gap:12px }
-.invav { width:42px; height:42px; background:var(--ac); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:700; font-size:17px; flex-shrink:0 }
-.invttl { font-weight:600; font-size:14px }
-.invsub { font-size:12px; color:var(--mu2); margin-top:3px; line-height:1.4 }
-
-/* ── RESULTS ── */
-#s-results { background:var(--bg) }
-.herocard { background:linear-gradient(135deg,var(--sf),var(--sf2)); border:1px solid var(--bd); border-radius:16px; padding:22px; text-align:center; position:relative; overflow:hidden }
-.herocard::before { content:''; position:absolute; top:-50px; left:50%; transform:translateX(-50%); width:200px; height:80px; background:var(--ac); filter:blur(70px); opacity:.11 }
-.hczone { font-family:'Instrument Serif',serif; font-size:clamp(24px,7vw,38px); line-height:1.1; margin-bottom:5px }
-.hczone em { color:var(--ac); font-style:italic }
-.hcsub { font-size:12px; color:var(--mu2); margin-bottom:16px }
-.hcstats { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--bd); border-radius:10px; overflow:hidden }
-.hcstat { background:var(--sf); padding:12px 7px; text-align:center }
-.hcval { font-family:'Syne',sans-serif; font-size:clamp(16px,4vw,21px); font-weight:700 }
-.hclbl { font-size:9px; color:var(--mu); margin-top:3px; letter-spacing:.5px; text-transform:uppercase }
-.hcsub2 { font-size:9px; color:var(--mu) }
-
-/* COMMUTE CARDS */
-.ccards { display:grid; grid-template-columns:1fr 1fr; gap:9px }
-.ccard { background:var(--sf); border:1px solid var(--bd); border-radius:10px; padding:14px }
-.cchd { display:flex; align-items:center; gap:7px; margin-bottom:9px }
-.ccdot { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
-.ccnm { font-size:13px; font-weight:600 }
-.cctrans { display:flex; align-items:center; gap:5px; padding:4px 8px; background:var(--sf2); border-radius:5px; font-size:11px; color:var(--mu2); margin-bottom:7px }
-.ccrow { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--bd); font-size:11px }
-.ccrow:last-child { border-bottom:none }
-.ccrow .rl { color:var(--mu) } .ccrow .rv { font-weight:600 }
-
-/* AI BOX */
-.aibox { background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(168,85,247,.02)); border:1px solid rgba(168,85,247,.22); border-radius:16px; padding:15px 17px; display:flex; gap:12px }
-.aigem { width:33px; height:33px; background:var(--pdm); border:1px solid rgba(168,85,247,.3); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0 }
-.ailbl { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--pu); margin-bottom:5px }
-.aitxt { font-size:12px; line-height:1.7; color:var(--mu2) }
-.aitxt strong { color:var(--tx) }
-
-/* PLACES */
-.sectitle { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--mu); display:flex; align-items:center; gap:10px; margin-bottom:11px }
-.sectitle::after { content:''; flex:1; height:1px; background:var(--bd) }
-.places { display:flex; flex-direction:column; gap:9px }
-.plcard { background:var(--sf); border:1px solid var(--bd); border-radius:16px; overflow:hidden; cursor:pointer; transition:all .25s; animation:rise .4s ease both }
-.plcard:hover { border-color:var(--bd2); transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.3) }
-@keyframes rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-.plcard:nth-child(1){animation-delay:.08s} .plcard:nth-child(2){animation-delay:.15s} .plcard:nth-child(3){animation-delay:.22s} .plcard:nth-child(4){animation-delay:.29s}
-.plcin { display:grid; grid-template-columns:64px 1fr auto; gap:12px; align-items:start; padding:14px }
-.plem { width:64px; height:64px; background:var(--sf2); border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:30px; flex-shrink:0 }
-.plbd { min-width:0 }
-.plhd { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:3px }
-.plnm { font-family:'Instrument Serif',serif; font-size:17px; line-height:1.2 }
-.badge { font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:2px 7px; border-radius:4px }
-.bfi{background:rgba(255,107,53,.15);color:var(--ac)} .bst{background:var(--ydm);color:var(--go)} .bnw{background:var(--gdm);color:var(--gn)} .bgm{background:var(--bdm);color:var(--bl)}
-.plcu { font-size:11px; color:var(--mu2); margin-bottom:7px }
-.plt { display:flex; gap:5px; flex-wrap:wrap }
-.ptc { display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:5px; font-size:10px; font-weight:600; background:var(--sf2); border:1px solid var(--bd) }
-.ptd { width:5px; height:5px; border-radius:50% }
-.plr { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0 }
-.plrt { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; display:flex; align-items:center; gap:2px }
-.plrt .star { color:var(--go); font-size:11px }
-.plpr { font-size:11px; color:var(--mu) }
-.svbtn { width:30px; height:30px; border-radius:7px; border:1px solid var(--bd); background:var(--sf2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all .2s }
-.svbtn:hover { border-color:var(--ac) } .svbtn.saved { background:var(--adm); border-color:var(--ac) }
-.pltgs { padding:8px 14px; border-top:1px solid var(--bd); display:flex; gap:5px; flex-wrap:wrap }
-.ptag { font-size:10px; padding:2px 7px; border-radius:4px; background:var(--sf2); color:var(--mu2); border:1px solid var(--bd) }
-
-/* RESULT ACTIONS */
-.resacts { display:grid; grid-template-columns:1fr 1fr; gap:9px }
-.rabtn { padding:13px; border-radius:10px; border:1.5px solid var(--bd2); background:var(--sf); color:var(--tx); font-family:'Syne',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:7px }
-.rabtn:hover { background:var(--sf2); border-color:var(--tx) }
-.rabtn.hi { background:var(--ac); border-color:var(--ac); color:#fff }
-.rabtn.hi:hover { box-shadow:0 4px 20px rgba(255,107,53,.3) }
-
-/* MODAL */
-.moverlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:1000; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px) }
-.moverlay.open { display:flex }
-.modal { background:var(--sf); border:1px solid var(--bd2); border-radius:16px 16px 0 0; padding:22px 18px 36px; width:100%; max-width:520px; animation:slideup .3s cubic-bezier(.34,1.56,.64,1) }
-@keyframes slideup { from{transform:translateY(100%)} to{transform:translateY(0)} }
-.mttl { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between }
-.mclose { width:27px; height:27px; border-radius:50%; border:1px solid var(--bd2); background:var(--sf2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--mu2) }
+/* LOADER */
+.loadscreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999}
+.loadscreen.hidden{display:none}
+.spinner{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loadtxt{font-size:13px;color:var(--mu2);font-family:'Syne',sans-serif}
 
 /* TOAST */
-.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--sf); border:1px solid var(--bd2); border-radius:40px; padding:10px 20px; font-size:13px; font-weight:500; white-space:nowrap; z-index:99999; transition:transform .35s cubic-bezier(.34,1.56,.64,1); box-shadow:0 8px 28px rgba(0,0,0,.5); max-width:90vw; text-align:center }
-.toast.show { transform:translateX(-50%) translateY(0) }
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--sf);border:1px solid var(--bd2);border-radius:40px;padding:10px 20px;font-size:13px;font-weight:500;white-space:nowrap;z-index:99999;transition:transform .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 28px rgba(0,0,0,.5);max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
 
-/* LOADING OVERLAY */
-.ldoverlay { position:fixed; inset:0; background:rgba(10,10,15,.85); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); flex-direction:column; gap:14px }
-.ldoverlay.on { display:flex }
-.ldspinner { width:38px; height:38px; border:3px solid var(--bd2); border-top-color:var(--ac); border-radius:50%; animation:spin .7s linear infinite }
-@keyframes spin { to{transform:rotate(360deg)} }
-.ldlabel { font-size:13px; color:var(--mu2); font-family:'Syne',sans-serif; font-weight:600 }
-
-/* SETTINGS BUTTON */
-.settingsbtn { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--bd2); background:var(--sf); color:var(--mu2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all .2s; flex-shrink:0 }
-.settingsbtn:hover { border-color:var(--tx); color:var(--tx); background:var(--sf2) }
-.apikey-status { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:600 }
-.apikey-status.set { background:var(--gdm); color:var(--gn) }
-.apikey-status.unset { background:var(--ydm); color:var(--go) }
-
-@media(max-width:480px) {
-  .irow { grid-template-columns:1fr }
-  .ccards { grid-template-columns:1fr }
-  .resacts { grid-template-columns:1fr }
-  .plcin { grid-template-columns:54px 1fr auto; gap:10px }
-  .plem { width:54px; height:54px; font-size:26px }
+@media(max-width:480px){
+  .irow{grid-template-columns:1fr}
+  .ccards{grid-template-columns:1fr}
+  .resacts{grid-template-columns:1fr}
+  .plcin{grid-template-columns:54px 1fr auto;gap:10px}
+  .plem{width:54px;height:54px;font-size:26px}
 }
-@media(min-width:768px) { .wrap,.wwide { padding:32px 24px 60px } }
+@media(min-width:768px){.wrap,.wwide{padding:32px 24px 60px}}
 </style>
 </head>
 <body>
 
-<!-- ═══════ HOME ═══════ -->
-<div id="s-home" class="scr on">
+<!-- LOADER -->
+<div class="loadscreen" id="loadscreen">
+  <div class="spinner"></div>
+  <div class="loadtxt" id="loadtxt">Loading…</div>
+</div>
+
+<!-- HOME -->
+<div id="s-home" class="scr">
   <div class="topbar">
     <div class="tblogo">rende<em>z</em>vous</div>
-    <button class="settingsbtn" onclick="openSettings()" title="Settings" style="margin-left:auto">⚙</button>
   </div>
-  <div class="wrap" style="padding-top:16px">
-    <div class="hero" style="padding-top:16px">
+  <div class="wrap">
+    <div class="hero">
       <h1>rende<em>z</em>vous</h1>
-      <p>Plan meetups that work for everyone — no sign-ups, no fake links, ever.</p>
+      <p>Plan meetups that work for everyone — no sign-ups, ever.</p>
     </div>
     <button class="newbtn" onclick="go('s-host')">✦ &nbsp;Start a New Plan</button>
-    <div class="seclbl">Your Live Plans</div>
+    <div class="seclbl">Your Recent Plans</div>
     <div id="home-plans"></div>
   </div>
 </div>
 
-<!-- ═══════ HOST FORM ═══════ -->
+<!-- HOST FORM -->
 <div id="s-host" class="scr">
   <div class="topbar">
     <button class="bkbtn" onclick="go('s-home')">←</button>
     <div class="tblogo">rende<em>z</em>vous</div>
-    <div class="tbr">Step 1 of 2</div>
+    <div class="tbr">New Plan</div>
   </div>
   <div class="wrap">
     <div class="formhd">
       <h2>Your <em>details</em></h2>
-      <p>Fill your info — share the link with friends. No sign-up needed for anyone.</p>
+      <p>Set how many people are coming. Everyone uses the same link — no sign-up needed.</p>
     </div>
 
     <div class="card">
@@ -302,6 +247,16 @@ body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); m
       <div class="irow">
         <div class="ig" style="margin-bottom:0"><label class="il">Free at</label><input class="ifield" id="h-free" type="time" value="19:00"></div>
         <div class="ig" style="margin-bottom:0"><label class="il">Home by</label><input class="ifield" id="h-back" type="time" value="22:00"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctitle"><div class="ci" style="background:var(--gdm)">👥</div>How many people total?</div>
+      <div class="bgrid" id="h-total">
+        <div class="tbtn" data-v="2" onclick="selTotal(this)"><div class="ti" style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">2</div><div class="tl">People</div></div>
+        <div class="tbtn on" data-v="3" onclick="selTotal(this)"><div class="ti" style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">3</div><div class="tl">People</div></div>
+        <div class="tbtn" data-v="4" onclick="selTotal(this)"><div class="ti" style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">4</div><div class="tl">People</div></div>
+        <div class="tbtn" data-v="5" onclick="selTotal(this)"><div class="ti" style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif">5</div><div class="tl">People</div></div>
       </div>
     </div>
 
@@ -340,28 +295,28 @@ body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); m
       </div>
     </div>
 
-    <button class="btnp" onclick="hostSubmit()">Create Plan & Get Share Link ✦</button>
+    <button class="btnp" id="host-btn" onclick="hostSubmit()">Create Plan & Get Share Link ✦</button>
   </div>
 </div>
 
-<!-- ═══════ SHARE SCREEN ═══════ -->
-<div id="s-share" class="scr">
+<!-- WAITING SCREEN -->
+<div id="s-waiting" class="scr">
   <div class="topbar">
     <button class="bkbtn" onclick="go('s-home')">←</button>
     <div class="tblogo">rende<em>z</em>vous</div>
-    <div class="tbr" id="share-count-top"></div>
+    <div class="tbr" id="wait-top"></div>
   </div>
   <div class="wrap">
     <div class="sharehero">
       <span class="shareanim">🎉</span>
       <h2>Plan is <em>live!</em></h2>
-      <p>Share the link below. Friends open it, fill their details — when everyone's in, the plan appears on that same link automatically.</p>
+      <p>Share this one link with everyone. Page updates live as each person joins. Results appear automatically when all are in.</p>
     </div>
 
     <div class="card">
-      <div class="ctitle" style="margin-bottom:10px"><div class="ci" style="background:var(--gdm)">🔗</div>Your Share Link</div>
+      <div class="ctitle" style="margin-bottom:10px"><div class="ci" style="background:var(--gdm)">🔗</div>Share this with everyone</div>
       <div class="urlbox">
-        <span class="urltext" id="share-url-display">—</span>
+        <span class="urltext" id="share-url">—</span>
         <button class="copybtn" id="copybtn" onclick="copyLink()">Copy</button>
       </div>
       <div class="smethods">
@@ -372,26 +327,22 @@ body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); m
     </div>
 
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="ctitle" style="margin-bottom:0"><div class="ci" style="background:var(--gdm)">👥</div>Who's joining</div>
-        <button class="pcact" onclick="openAddModal()" style="font-size:11px">+ Add person</button>
+      <div class="ctitle" style="margin-bottom:12px"><div class="ci" style="background:var(--gdm)">👥</div>Who's joined</div>
+      <div class="progwrap">
+        <div class="progtxt"><span id="prog-label">0 joined</span><span id="prog-of">of 0</span></div>
+        <div class="progbar"><div class="progfill" id="prog-fill" style="width:0%"></div></div>
       </div>
-      <div class="slots" id="share-slots"></div>
+      <div class="slots" id="wait-slots"></div>
     </div>
 
     <div class="livepill">
       <div class="lpulse"></div>
-      <div class="ltxt">Waiting for friends… <strong id="share-count-pill">—</strong></div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btns" onclick="demoFriendOpen()">🧪 Demo: Simulate a friend opening the link</button>
-      <button class="btns" style="color:var(--mu);border-color:var(--bd)" onclick="demoAllReady()">⚡ Demo: Skip ahead — show results</button>
+      <div class="ltxt">Live — updates automatically as friends join</div>
     </div>
   </div>
 </div>
 
-<!-- ═══════ FRIEND FORM ═══════ -->
+<!-- FRIEND FORM -->
 <div id="s-friend" class="scr">
   <div class="topbar">
     <div style="width:36px"></div>
@@ -403,7 +354,7 @@ body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); m
       <div class="invav" id="inv-av">R</div>
       <div>
         <div class="invttl" id="inv-ttl">Invited you to plan a meetup!</div>
-        <div class="invsub">Just fill your details — no account needed. Plan reveals when everyone's in.</div>
+        <div class="invsub">Fill your details below — no account needed. Results show when everyone's in.</div>
       </div>
     </div>
 
@@ -428,15 +379,11 @@ body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); m
       </div>
     </div>
 
-    <button class="btnp" id="friend-submit-btn"
-      style="background:var(--bl)"
-      onmouseover="this.style.boxShadow='0 8px 28px rgba(74,158,255,.35)'"
-      onmouseout="this.style.boxShadow='none'"
-      onclick="friendSubmit()">I'm In ✦</button>
+    <button class="btnp" id="friend-btn" style="background:var(--bl)" onclick="friendSubmit()">I'm In ✦</button>
   </div>
 </div>
 
-<!-- ═══════ RESULTS ═══════ -->
+<!-- RESULTS -->
 <div id="s-results" class="scr">
   <div class="topbar">
     <button class="bkbtn" onclick="go('s-home')">←</button>
@@ -469,182 +416,70 @@ body { font-family:'Mulish',sans-serif; background:var(--bg); color:var(--tx); m
   </div>
 </div>
 
-<!-- ADD FRIEND MODAL -->
-<div class="moverlay" id="add-modal" onclick="if(event.target===this)closeAddModal()">
-  <div class="modal">
-    <div class="mttl">Add someone to this plan <button class="mclose" onclick="closeAddModal()">✕</button></div>
-    <div class="ig"><label class="il">Their name (optional)</label><input class="ifield" id="add-name" placeholder="e.g. Amit"></div>
-    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
-      <button class="btnp" onclick="confirmAdd()" style="font-size:14px;padding:13px">Add to plan</button>
-      <button class="btns" onclick="closeAddModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- LOADING OVERLAY -->
-<div class="ldoverlay" id="ld-overlay">
-  <div class="ldspinner"></div>
-  <div class="ldlabel" id="ld-label">Calculating real travel times…</div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div class="moverlay" id="settings-modal" onclick="if(event.target===this)closeSettings()">
-  <div class="modal">
-    <div class="mttl">Settings <button class="mclose" onclick="closeSettings()">✕</button></div>
-    <div style="margin-bottom:14px">
-      <div id="apikey-status-banner" class="apikey-status unset">⚠ Google Maps API key not set — using estimated times</div>
-    </div>
-    <div class="ig">
-      <label class="il">Google Maps API Key</label>
-      <input class="ifield" id="settings-apikey" placeholder="AIza…" type="password" autocomplete="off">
-      <div style="font-size:11px;color:var(--mu);margin-top:6px;line-height:1.6">
-        Enable the <strong style="color:var(--mu2)">Maps JavaScript API</strong> and <strong style="color:var(--mu2)">Distance Matrix API</strong> in your Google Cloud Console. Stored only in this browser.
-      </div>
-    </div>
-    <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-      <button class="btnp" onclick="saveSettings()" style="font-size:14px;padding:13px">Save Key</button>
-      <button class="btns" onclick="clearSettings()" style="color:var(--mu);font-size:12px">Clear saved key</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════
+// ─────────────────────────────────────
+// CONFIG — replace these two values
+// ─────────────────────────────────────
+const SUPABASE_URL  = 'https://pkckhifxubojeiuqhpqb.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrY2toaWZ4dWJvamVpdXFocHFiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTc5MDA2NSwiZXhwIjoyMDk1MzY2MDY1fQ.jl8kYmDanQfWtJN4GUx_QzfOS09gtjTTUcKSgUpOEHs';
+
+// ─────────────────────────────────────
+// INIT SUPABASE
+// ─────────────────────────────────────
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ─────────────────────────────────────
 // CONSTANTS
-// ══════════════════════════════════════
-const TI = { driving:'🚗', metro:'🚇', bus:'🚌', auto:'🛺', walk:'🚶' };
-const TL = { driving:'Driving', metro:'Metro', bus:'Bus/DTC', auto:'Auto', walk:'Walking' };
-const TT = { driving:42, metro:27, bus:52, auto:38, walk:68 }; // fallback if no API key
-
-// Maps travel mode mapping
-const GM_MODE = {
-  driving: 'DRIVING',
-  metro:   'TRANSIT',
-  bus:     'TRANSIT',
-  auto:    'DRIVING',
-  walk:    'WALKING'
-};
-
-let gMapsReady = false;
-let GMAPS_KEY  = '';
-
-function loadGoogleMaps(key) {
-  if (!key || document.getElementById('gmaps-script')) return;
-  const s = document.createElement('script');
-  s.id  = 'gmaps-script';
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=onGMapsReady`;
-  s.async = true; s.defer = true;
-  document.head.appendChild(s);
-}
-
-window.onGMapsReady = function() { gMapsReady = true; };
-
-function initAPIKey() {
-  GMAPS_KEY = localStorage.getItem('rzv_gmaps_key') || '';
-  if (GMAPS_KEY) loadGoogleMaps(GMAPS_KEY);
-  refreshKeyBanner();
-}
-
-function refreshKeyBanner() {
-  const b = document.getElementById('apikey-status-banner');
-  if (!b) return;
-  if (GMAPS_KEY) {
-    b.className = 'apikey-status set';
-    b.textContent = '✓ Google Maps API key active — real travel times enabled';
-  } else {
-    b.className = 'apikey-status unset';
-    b.textContent = '⚠ Google Maps API key not set — using estimated times';
-  }
-  const inp = document.getElementById('settings-apikey');
-  if (inp) inp.value = GMAPS_KEY;
-}
-
-// ── Settings modal ──
-function openSettings()  { refreshKeyBanner(); document.getElementById('settings-modal').classList.add('open'); }
-function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
-
-function saveSettings() {
-  const key = document.getElementById('settings-apikey').value.trim();
-  if (!key) { toast('Paste your API key first'); return; }
-  GMAPS_KEY = key;
-  localStorage.setItem('rzv_gmaps_key', key);
-  loadGoogleMaps(key);
-  refreshKeyBanner();
-  closeSettings();
-  toast('✓ API key saved — real travel times active!');
-}
-
-function clearSettings() {
-  GMAPS_KEY = '';
-  localStorage.removeItem('rzv_gmaps_key');
-  refreshKeyBanner();
-  toast('API key cleared');
-}
-
-// ── Distance Matrix helper ──
-function getRealTravelTime(origin, destination, transport) {
-  return new Promise(resolve => {
-    if (!gMapsReady || !window.google) { resolve(TT[transport] || 35); return; }
-    const mode = google.maps.TravelMode[GM_MODE[transport]] || google.maps.TravelMode.TRANSIT;
-    const svc  = new google.maps.DistanceMatrixService();
-    svc.getDistanceMatrix(
-      { origins:[origin], destinations:[destination], travelMode: mode },
-      (res, status) => {
-        if (status === 'OK' && res.rows[0]?.elements[0]?.status === 'OK') {
-          resolve(Math.round(res.rows[0].elements[0].duration.value / 60));
-        } else {
-          resolve(TT[transport] || 35);
-        }
-      }
-    );
-  });
-}
+// ─────────────────────────────────────
+const TI  = { driving:'🚗', metro:'🚇', bus:'🚌', auto:'🛺', walk:'🚶' };
+const TL  = { driving:'Driving', metro:'Metro', bus:'Bus/DTC', auto:'Auto', walk:'Walking' };
 const CLR = ['var(--ac)','var(--bl)','var(--gn)','var(--pu)','var(--go)'];
-const ZONES = ['Hauz Khas Village','Saket','Khan Market','Connaught Place'];
-const DB = {
-  'Hauz Khas Village':[
-    {e:'🍹',n:'Hauz Khas Social',c:'All Day · Bar + Café',r:4.5,p:'₹₹',rv:2840,b:'bfi',bl:'🔥 Trending',tg:['Rooftop','Live Music Fri','Work-friendly']},
-    {e:'🌿',n:'Diva Spiced',c:'Modern Indian',r:4.7,p:'₹₹₹',rv:1240,b:'bst',bl:'★ Top Pick',tg:['Private booths','Award cocktails','Intimate']},
-    {e:'🎵',n:'Raasta',c:'Caribbean · Bar',r:4.3,p:'₹₹',rv:3200,b:null,bl:null,tg:['Reggae vibes','Famous hookah','Late-night']},
-    {e:'🏯',n:'Smoke House Deli',c:'European · All Day',r:4.4,p:'₹₹₹',rv:980,b:'bnw',bl:'🆕 New',tg:['Craft beers','Artisan food','Cosy']}
-  ],
-  'Saket':[
-    {e:'🍕',n:'Di Ghent',c:'Italian + European',r:4.6,p:'₹₹₹',rv:720,b:'bgm',bl:'💎 Hidden Gem',tg:['Wood-fired pizza','Intimate','Great wine']},
-    {e:'🍣',n:'Sakura',c:'Japanese · Sushi',r:4.8,p:'₹₹₹₹',rv:540,b:'bst',bl:'★ Top Rated',tg:['Omakase','Reserve ahead','Sake bar']},
-    {e:'☕',n:'Blue Tokai',c:'Specialty Coffee',r:4.5,p:'₹',rv:1800,b:'bfi',bl:'🔥 Trending',tg:['Single origin','All-day','Work-friendly']}
-  ],
-  'Khan Market':[
-    {e:'🍔',n:'The Big Chill',c:'Italian · Comfort Food',r:4.6,p:'₹₹',rv:4200,b:'bst',bl:'★ Classic',tg:['Legendary','Best pasta in Delhi','No reservations']},
-    {e:'🫖',n:'Lodi Garden Café',c:'Continental · Alfresco',r:4.7,p:'₹₹₹',rv:860,b:'bgm',bl:'💎 Hidden Gem',tg:['Outdoor','Heritage views','Sunsets']},
-    {e:'🍷',n:'Cibo Ristorante',c:'Italian · Wine Bar',r:4.5,p:'₹₹₹',rv:540,b:'bnw',bl:'🆕 New',tg:['Curated wine list','Date spot','Refined']}
-  ],
-  'Connaught Place':[
-    {e:'🍽',n:'Farzi Café CP',c:'Modern Indian · Cocktails',r:4.4,p:'₹₹₹',rv:3400,b:'bfi',bl:'🔥 Trending',tg:['Molecular Indian','Instagram-worthy','Great cocktails']},
-    {e:'🥩',n:'Dum Pukht',c:'Awadhi · Fine Dine',r:4.8,p:'₹₹₹₹',rv:620,b:'bst',bl:'★ Iconic',tg:['Heritage recipes','Slow-cooked','Special occasion']},
-    {e:'🍺',n:'1911 Bar',c:'Colonial-era · Cocktails',r:4.6,p:'₹₹₹',rv:1100,b:'bgm',bl:'💎 Gem',tg:['Heritage interiors','Signature drinks','Brasserie vibe']}
-  ]
-};
+const BADGE_CLS = { 'Trending':'bfi', 'Top Pick':'bst', 'New':'bnw', 'Hidden Gem':'bgm' };
 
-// ══════════════════════════════════════
+// ─────────────────────────────────────
 // STATE
-// ══════════════════════════════════════
+// ─────────────────────────────────────
 const S = {
-  hTransport: 'driving',
-  fTransport: 'metro',
-  budget: 'mid',
-  planId: null,
-  saved: new Set()
+  hTransport : 'driving',
+  fTransport : 'metro',
+  budget     : 'mid',
+  total      : 3,
+  code       : null,
+  sub        : null,
+  saved      : new Set()
 };
 
-let plans = [];
-try { plans = JSON.parse(localStorage.getItem('rzv3') || '[]'); } catch(e) { plans = []; }
-function savePlans() { try { localStorage.setItem('rzv3', JSON.stringify(plans)); } catch(e) {} }
+let recentCodes = [];
+try { recentCodes = JSON.parse(localStorage.getItem('rzv_codes') || '[]'); } catch(e) {}
+function saveRecent() { localStorage.setItem('rzv_codes', JSON.stringify(recentCodes.slice(0,10))); }
 
-// ══════════════════════════════════════
+let joinedCodes = [];
+try { joinedCodes = JSON.parse(localStorage.getItem('rzv_joined') || '[]'); } catch(e) {}
+function saveJoined() { localStorage.setItem('rzv_joined', JSON.stringify(joinedCodes.slice(0,20))); }
+
+// ─────────────────────────────────────
+// LOADER
+// ─────────────────────────────────────
+function showLoad(msg) {
+  document.getElementById('loadtxt').textContent = msg || 'Loading…';
+  document.getElementById('loadscreen').classList.remove('hidden');
+}
+function hideLoad() { document.getElementById('loadscreen').classList.add('hidden'); }
+
+// ─────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ─────────────────────────────────────
 // NAVIGATION
-// ══════════════════════════════════════
+// ─────────────────────────────────────
 function go(id) {
   document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
@@ -652,423 +487,338 @@ function go(id) {
   if (id === 's-home') renderHome();
 }
 
-// ══════════════════════════════════════
-// URL-BASED SHARING  ← THE KEY FIX
-// The entire plan is encoded into the URL hash as base64 JSON.
-// When a friend opens the link, we decode it and show them the friend form.
-// No server, no fake domain, no login wall.
-// ══════════════════════════════════════
-function planToURL(pl) {
-  const data = JSON.stringify({ host: pl.host, friends: pl.friends, code: pl.code, zone: pl.zone });
-  const b64 = btoa(unescape(encodeURIComponent(data)));
-  const base = window.location.href.split('#')[0];
-  return base + '#plan=' + b64;
-}
-
-function urlToPlan(hash) {
-  const b64 = hash.replace('#plan=', '');
-  const json = decodeURIComponent(escape(atob(b64)));
-  return JSON.parse(json);
-}
-
-function updateShareURL() {
-  const pl = plans[S.planId];
-  const url = planToURL(pl);
-  document.getElementById('share-url-display').textContent = url;
-}
-
-function copyLink() {
-  const pl = plans[S.planId];
-  const url = planToURL(pl);
-  navigator.clipboard.writeText(url).then(() => {
-    const b = document.getElementById('copybtn');
-    b.textContent = '✓ Copied!'; b.classList.add('done');
-    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 2500);
-    toast('Link copied — paste it in any chat!');
-  }).catch(() => {
-    // Fallback: select the text
-    const el = document.getElementById('share-url-display');
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    toast('Select all and copy the link above');
-  });
-}
-
-function shareVia(platform) {
-  const pl = plans[S.planId];
-  const url = planToURL(pl);
-  const msg = `${pl.host.name} invited you to plan a meetup! Open this link and fill in your details (no sign-up needed) 👇\n${url}`;
-  if (platform === 'whatsapp') {
-    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-  } else if (platform === 'sms') {
-    window.open('sms:?&body=' + encodeURIComponent(msg), '_blank');
-  } else if (platform === 'native' && navigator.share) {
-    navigator.share({ title: 'Join my meetup plan!', text: msg }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).catch(() => {});
-    toast('Link copied — share it anywhere!');
-  }
-}
-
-function shareResultsLink() {
-  const pl = plans[S.planId];
-  const url = planToURL(pl);
-  if (navigator.share) {
-    navigator.share({ title: 'Our meetup plan ✨', url }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).catch(() => {});
-    toast('📲 Plan link copied!');
-  }
-}
-
-// ══════════════════════════════════════
-// HOME DASHBOARD
-// ══════════════════════════════════════
+// ─────────────────────────────────────
+// HOME
+// ─────────────────────────────────────
 function renderHome() {
   const el = document.getElementById('home-plans');
-  if (!plans.length) {
-    el.innerHTML = `<div class="emptyplans"><div class="eico">🗺</div><p>No plans yet.<br>Start one and share with friends — no accounts needed for anyone.</p></div>`;
+  if (!recentCodes.length) {
+    el.innerHTML = `<div class="emptyplans"><div class="eico">🗺</div><p>No plans yet.<br>Start one and share the link — no accounts needed for anyone.</p></div>`;
     return;
   }
-  el.innerHTML = plans.map((pl, i) => {
-    const joined = pl.friends.filter(f => f.joined).length + 1;
-    const total = pl.friends.length + 1;
-    const allReady = joined >= total;
-    const sc = allReady ? 'pr' : 'pw';
-    const badge = allReady ? 'r' : 'w';
-    const label = allReady ? 'All in ✓' : `${joined}/${total} joined`;
-    return `<div class="plancard ${sc}" onclick="openPlan(${i})">
+  el.innerHTML = recentCodes.map(code => `
+    <div class="plancard pw" onclick="openByCode('${code}')">
       <div class="pctop">
-        <div class="pcname">${pl.host.name}'s plan · ${pl.zone}</div>
-        <div class="pcbadge ${badge}">${label}</div>
+        <div class="pcname">Plan · ${code}</div>
+        <div class="pcbadge w">Tap to open</div>
       </div>
-      <div class="pcmeta">${(pl.host.vibes||[]).slice(0,3).join(' · ')||'No vibe set'} · ${(pl.host.loc||'').split(',')[0]}</div>
-      <div class="pcpeople">
-        <div class="pcperson"><div class="pcdot" style="background:var(--ac)"></div>${pl.host.name} <span style="color:var(--mu);font-weight:400;font-size:9px">(you)</span></div>
-        ${pl.friends.map((f,fi)=>`<div class="pcperson"><div class="pcdot" style="background:${CLR[(fi+1)%CLR.length]}"></div>${f.name||'Pending'}${f.joined?' <span style="color:var(--gn);font-size:9px">✓</span>':' <span style="color:var(--mu);font-size:9px">…</span>'}</div>`).join('')}
-      </div>
-      <div class="pcacts">
-        ${allReady
-          ? `<button class="pcact hi" onclick="event.stopPropagation();openPlan(${i})">✦ See Results</button>`
-          : `<button class="pcact" onclick="event.stopPropagation();resumeShare(${i})">📲 Share Link</button>`}
-        <button class="pcact" onclick="event.stopPropagation();S.planId=${i};openAddModal()">+ Add person</button>
-        <button class="pcact" onclick="event.stopPropagation();removeLast(${i})">− Remove last</button>
-        <button class="pcact red" onclick="event.stopPropagation();deletePlan(${i})">✕ Delete</button>
-      </div>
-    </div>`;
-  }).join('');
+      <div class="pcmeta">${window.location.origin}/plan/${code}</div>
+    </div>`).join('');
 }
 
-function openPlan(i) {
-  S.planId = i;
-  const pl = plans[i];
-  if (pl.friends.every(f => f.joined)) {
-    loadResults(i);
-  } else {
-    resumeShare(i);
+async function openByCode(code) {
+  showLoad('Loading plan…');
+  try {
+    const res  = await fetch(`/api/plans?code=${code}`);
+    if (!res.ok) throw new Error();
+    const plan = await res.json();
+    hideLoad();
+    routeToPlan(plan);
+  } catch {
+    hideLoad();
+    toast('Could not load plan — it may have expired');
   }
 }
 
-function resumeShare(i) {
-  S.planId = i;
-  const pl = plans[i];
-  updateShareURL();
-  renderSlots();
-  go('s-share');
-}
-
-function loadResults(i) {
-  S.planId = i;
-  buildResults();
-}
-
-function deletePlan(i) {
-  plans.splice(i, 1);
-  savePlans(); renderHome();
-  toast('Plan deleted');
-}
-
-function removeLast(i) {
-  const pl = plans[i];
-  if (!pl.friends.length) { toast('No friends to remove'); return; }
-  const last = pl.friends[pl.friends.length - 1];
-  if (last.joined) { toast("Can't remove someone who already joined"); return; }
-  pl.friends.pop();
-  savePlans(); renderHome();
-  // If share screen is visible for this plan, refresh it
-  if (S.planId === i && document.getElementById('s-share').classList.contains('on')) {
-    updateShareURL(); renderSlots();
-  }
-  toast('Slot removed');
-}
-
-// ══════════════════════════════════════
-// TRANSPORT / BUDGET SELECTORS
-// ══════════════════════════════════════
+// ─────────────────────────────────────
+// SELECTORS
+// ─────────────────────────────────────
 function selT(el, who) {
-  const container = document.getElementById(who === 'h' ? 'ht' : 'ft');
-  container.querySelectorAll('.tbtn').forEach(b => b.classList.remove('on'));
+  const id = who === 'h' ? 'ht' : 'ft';
+  document.querySelectorAll(`#${id} .tbtn`).forEach(b => b.classList.remove('on'));
   el.classList.add('on');
   if (who === 'h') S.hTransport = el.dataset.v;
-  else S.fTransport = el.dataset.v;
+  else             S.fTransport = el.dataset.v;
 }
-
 function selB(el) {
   document.querySelectorAll('#h-budget .tbtn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
   S.budget = el.dataset.v;
 }
+function selTotal(el) {
+  document.querySelectorAll('#h-total .tbtn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  S.total = parseInt(el.dataset.v);
+}
 
-// ══════════════════════════════════════
-// HOST SUBMITS
-// ══════════════════════════════════════
-function hostSubmit() {
-  const name = document.getElementById('h-name').value.trim() || 'You';
-  const loc  = document.getElementById('h-loc').value.trim()  || 'Connaught Place, Delhi';
-  const free = document.getElementById('h-free').value;
-  const back = document.getElementById('h-back').value;
+// ─────────────────────────────────────
+// HOST SUBMIT
+// ─────────────────────────────────────
+async function hostSubmit() {
+  const name = document.getElementById('h-name').value.trim();
+  const loc  = document.getElementById('h-loc').value.trim();
+  if (!name) { toast('Please enter your name'); return; }
+  if (!loc)  { toast('Please enter your location'); return; }
+
+  const btn = document.getElementById('host-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
   const vibes = [...document.querySelectorAll('#h-vibes .vchip.on')].map(v => v.textContent.trim());
+  const host  = { name, loc,
+    free: document.getElementById('h-free').value,
+    back: document.getElementById('h-back').value,
+    transport: S.hTransport, vibes, budget: S.budget };
 
-  const host = { name, loc, free, back, transport: S.hTransport, vibes, budget: S.budget };
-  const friends = [{ name:'', loc:'', free:'18:30', back:'22:00', transport:'metro', joined:false }];
-  const code = Math.random().toString(36).substr(2,6).toUpperCase();
-  const zone = ZONES[Math.floor(Math.random() * ZONES.length)];
+  try {
+    const res  = await fetch('/api/plans', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ total: S.total, host })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
 
-  const pl = { host, friends, code, zone, createdAt: Date.now() };
-  plans.unshift(pl);
-  S.planId = 0;
-  savePlans();
+    S.code = data.code;
+    if (!recentCodes.includes(S.code)) { recentCodes.unshift(S.code); saveRecent(); }
+    if (!joinedCodes.includes(S.code)) { joinedCodes.unshift(S.code); saveJoined(); }
 
-  updateShareURL();
-  renderSlots();
-  go('s-share');
+    history.pushState(null, '', `/plan/${S.code}`);
+
+    const planRes = await fetch(`/api/plans?code=${S.code}`);
+    const plan    = await planRes.json();
+    renderWaiting(plan);
+    startRealtime(S.code);
+    go('s-waiting');
+  } catch(e) {
+    toast('Something went wrong — try again');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Plan & Get Share Link ✦';
+  }
 }
 
-// ══════════════════════════════════════
-// SHARE SCREEN — RENDER SLOTS
-// ══════════════════════════════════════
-function renderSlots() {
-  const pl = plans[S.planId];
-  const el = document.getElementById('share-slots');
-  let html = `<div class="slot joined">
-    <div class="slotav" style="background:var(--ac)">${pl.host.name[0].toUpperCase()}</div>
-    <div class="slotinfo">
-      <div class="slotnm">${pl.host.name} <span style="font-size:10px;color:var(--mu);font-weight:400">(you)</span></div>
-      <div class="slotdt">${(pl.host.loc||'').split(',')[0]} · ${TI[pl.host.transport]} ${TL[pl.host.transport]}</div>
-    </div>
-    <div class="slotst sst-ok">Ready ✓</div>
-  </div>`;
-  pl.friends.forEach((f, i) => {
-    html += `<div class="slot ${f.joined ? 'joined' : ''}">
-      <div class="slotav" style="background:${f.joined ? CLR[(i+1)%CLR.length] : 'var(--bd2)'};color:${f.joined ? 'white' : 'var(--mu)'}">${f.joined ? f.name[0].toUpperCase() : '?'}</div>
-      <div class="slotinfo">
-        <div class="slotnm">${f.joined ? f.name : (f.name || 'Waiting for friend…')}</div>
-        <div class="slotdt">${f.joined ? `${(f.loc||'').split(',')[0]} · ${TI[f.transport]} ${TL[f.transport]}` : 'Link not opened yet'}</div>
+// ─────────────────────────────────────
+// WAITING SCREEN
+// ─────────────────────────────────────
+function renderWaiting(plan) {
+  const slots  = plan.slots || [];
+  const joined = slots.filter(s => s.joined).length;
+  const total  = plan.total;
+  const url    = `${window.location.origin}/plan/${plan.code}`;
+
+  document.getElementById('wait-top').textContent   = `${joined}/${total} in`;
+  document.getElementById('prog-label').textContent = `${joined} joined`;
+  document.getElementById('prog-of').textContent    = `of ${total}`;
+  document.getElementById('prog-fill').style.width  = `${Math.round((joined/total)*100)}%`;
+  document.getElementById('share-url').textContent  = url;
+
+  document.getElementById('wait-slots').innerHTML = slots.map((s, i) => `
+    <div class="slot ${s.joined ? 'joined' : ''}">
+      <div class="slotav" style="background:${s.joined ? CLR[i%CLR.length] : 'var(--bd2)'};color:${s.joined ? '#fff' : 'var(--mu)'}">
+        ${s.joined && s.name ? s.name[0].toUpperCase() : (i === 0 ? '👑' : '?')}
       </div>
-      <div class="slotst ${f.joined ? 'sst-ok' : 'sst-pend'}">${f.joined ? 'Joined ✓' : 'Pending'}</div>
-      ${!f.joined ? `<button class="rmslot" onclick="removeSlot(${i})" title="Remove this slot">✕</button>` : ''}
-    </div>`;
-  });
-  el.innerHTML = html;
-
-  const joined = pl.friends.filter(f => f.joined).length + 1;
-  const total  = pl.friends.length + 1;
-  document.getElementById('share-count-pill').innerHTML = `<strong>${joined} / ${total} ready</strong>`;
-  document.getElementById('share-count-top').textContent = `${joined}/${total} in`;
+      <div class="slotinfo">
+        <div class="slotnm">${s.joined && s.name ? s.name : (i === 0 ? 'Host' : `Person ${i+1}`)}</div>
+        <div class="slotdt">${s.joined && s.loc ? s.loc.split(',')[0] + ' · ' + TI[s.transport] + ' ' + TL[s.transport] : 'Waiting…'}</div>
+      </div>
+      <div class="slotst ${s.joined ? 'sst-ok' : 'sst-pend'}">${s.joined ? 'Joined ✓' : 'Pending'}</div>
+    </div>`).join('');
 }
 
-function removeSlot(i) {
-  const pl = plans[S.planId];
-  pl.friends.splice(i, 1);
-  savePlans();
-  updateShareURL();
-  renderSlots();
-  renderHome();
-  toast('Slot removed');
+// ─────────────────────────────────────
+// REALTIME
+// ─────────────────────────────────────
+function startRealtime(code) {
+  if (S.sub) { sb.removeChannel(S.sub); S.sub = null; }
+  S.sub = sb.channel(`plan-${code}`)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'plans', filter: `code=eq.${code}`
+    }, payload => {
+      const plan = payload.new;
+      if (document.getElementById('s-waiting').classList.contains('on')) renderWaiting(plan);
+      if (plan.slots.every(s => s.joined)) {
+        toast("🎉 Everyone's in — building your plan!");
+        setTimeout(() => buildResults(plan), 900);
+      }
+    })
+    .subscribe();
 }
 
-// ══════════════════════════════════════
-// DEMO HELPERS
-// ══════════════════════════════════════
-function demoFriendOpen() {
-  const pl = plans[S.planId];
-  document.getElementById('inv-av').textContent = pl.host.name[0].toUpperCase();
-  document.getElementById('inv-ttl').textContent = `${pl.host.name} invited you to a meetup!`;
-  document.querySelectorAll('#ft .tbtn').forEach(b => b.classList.remove('on'));
-  document.querySelector('#ft [data-v="metro"]').classList.add('on');
-  S.fTransport = 'metro';
-  document.getElementById('f-name').value = '';
-  document.getElementById('f-loc').value = '';
-  toast('Simulating: friend opened the link…');
-  setTimeout(() => go('s-friend'), 800);
+// ─────────────────────────────────────
+// SHARE HELPERS
+// ─────────────────────────────────────
+function planURL() { return `${window.location.origin}/plan/${S.code}`; }
+
+function copyLink() {
+  navigator.clipboard.writeText(planURL()).then(() => {
+    const b = document.getElementById('copybtn');
+    b.textContent = '✓ Copied!'; b.classList.add('done');
+    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('done'); }, 2500);
+    toast('Link copied — paste it in any chat!');
+  }).catch(() => toast('Copy the link from the box above'));
 }
 
-function demoAllReady() {
-  const pl = plans[S.planId];
-  const names = ['Priya','Amit','Riya','Dev','Kabir'];
-  const locs  = ['Lajpat Nagar, Delhi','Saket, Delhi','Noida Sector 18','Gurgaon Sector 29','Dwarka, Delhi'];
-  const trans = ['metro','driving','auto','metro','bus'];
-  pl.friends.forEach((f, i) => {
-    f.joined = true;
-    if (!f.name) f.name = names[i] || `Friend ${i+1}`;
-    if (!f.loc)  f.loc  = locs[i]  || 'Delhi';
-    if (!f.free) f.free = '18:30';
-    if (!f.back) f.back = '22:00';
-    f.transport = trans[i] || 'metro';
-  });
-  savePlans();
-  buildResults();
+function shareVia(platform) {
+  const url = planURL();
+  const msg = `Join my meetup plan on Rendezvous! Open this link and fill your details (no sign-up needed) 👇\n${url}`;
+  if (platform === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  else if (platform === 'sms') window.open('sms:?&body=' + encodeURIComponent(msg), '_blank');
+  else if (platform === 'native' && navigator.share) navigator.share({ title: 'Join my meetup!', text: msg }).catch(() => {});
+  else { navigator.clipboard.writeText(url).catch(() => {}); toast('Link copied!'); }
 }
 
-// ══════════════════════════════════════
-// FRIEND SUBMITS
-// ══════════════════════════════════════
-function friendSubmit() {
-  const name = document.getElementById('f-name').value.trim() || 'Friend';
-  const loc  = document.getElementById('f-loc').value.trim()  || 'Lajpat Nagar, Delhi';
-  const free = document.getElementById('f-free').value;
-  const back = document.getElementById('f-back').value;
+function shareResultsLink() {
+  const url = planURL();
+  if (navigator.share) navigator.share({ title: 'Our meetup plan ✨', url }).catch(() => {});
+  else { navigator.clipboard.writeText(url).catch(() => {}); toast('📲 Plan link copied!'); }
+}
 
-  const pl = plans[S.planId !== null ? S.planId : 0];
-  const slot = pl.friends.find(f => !f.joined);
-  if (slot) {
-    slot.name = name; slot.loc = loc; slot.free = free;
-    slot.back = back; slot.transport = S.fTransport; slot.joined = true;
-  } else {
-    // All slots filled — add new one as joined
-    pl.friends.push({ name, loc, free, back, transport: S.fTransport, joined: true });
+// ─────────────────────────────────────
+// FRIEND SUBMIT
+// ─────────────────────────────────────
+async function friendSubmit() {
+  const name = document.getElementById('f-name').value.trim();
+  const loc  = document.getElementById('f-loc').value.trim();
+  if (!name) { toast('Please enter your name'); return; }
+  if (!loc)  { toast('Please enter your location'); return; }
+
+  const btn = document.getElementById('friend-btn');
+  btn.disabled = true; btn.textContent = 'Joining…';
+
+  try {
+    const res  = await fetch(`/api/plans?code=${S.code}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, loc,
+        free: document.getElementById('f-free').value,
+        back: document.getElementById('f-back').value,
+        transport: S.fTransport
+      })
+    });
+    const plan = await res.json();
+    if (!res.ok) throw new Error(plan.error);
+
+    if (!recentCodes.includes(S.code)) { recentCodes.unshift(S.code); saveRecent(); }
+    if (!joinedCodes.includes(S.code)) { joinedCodes.unshift(S.code); saveJoined(); }
+
+    if (plan.slots.every(s => s.joined)) {
+      toast("🎉 Everyone's in — building your plan!");
+      setTimeout(() => buildResults(plan), 900);
+    } else {
+      toast("✓ You're in! Waiting for others…");
+      renderWaiting(plan);
+      startRealtime(S.code);
+      go('s-waiting');
+    }
+  } catch(e) {
+    toast('Something went wrong — try again');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = "I'm In ✦";
   }
-  savePlans();
-
-  const allIn = pl.friends.every(f => f.joined);
-  if (allIn) {
-    toast("🎉 Everyone's in — building your plan!");
-    setTimeout(() => buildResults(), 900);
-  } else {
-    toast("✓ You're in! Waiting for others…");
-    updateShareURL();
-    renderSlots();
-    go('s-share');
-  }
 }
 
-// ══════════════════════════════════════
-// ADD FRIEND MODAL
-// ══════════════════════════════════════
-function openAddModal()  { document.getElementById('add-modal').classList.add('open'); }
-function closeAddModal() { document.getElementById('add-modal').classList.remove('open'); }
-
-function confirmAdd() {
-  const name = document.getElementById('add-name').value.trim() || 'Friend';
-  const pl = plans[S.planId !== null ? S.planId : 0];
-  pl.friends.push({ name, loc:'', free:'19:00', back:'22:00', transport:'metro', joined:false });
-  savePlans();
-  closeAddModal();
-  document.getElementById('add-name').value = '';
-  if (document.getElementById('s-share').classList.contains('on')) {
-    updateShareURL(); renderSlots();
-  }
-  renderHome();
-  toast(`Added ${name} — share the link with them!`);
-}
-
-// ══════════════════════════════════════
+// ─────────────────────────────────────
 // BUILD RESULTS
-// ══════════════════════════════════════
+// ─────────────────────────────────────
 const toMins = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
 const toStr  = m => { const h = Math.floor(m/60)%24, mn = m%60; return `${h}:${mn.toString().padStart(2,'0')} ${h>=12?'PM':'AM'}`; };
 
-function showLoader(msg) {
-  document.getElementById('ld-label').textContent = msg || 'Calculating…';
-  document.getElementById('ld-overlay').classList.add('on');
-}
-function hideLoader() { document.getElementById('ld-overlay').classList.remove('on'); }
+async function buildResults(plan) {
+  showLoad('Calculating travel times…');
+  S.code = plan.code;
 
-async function buildResults() {
-  const pl  = plans[S.planId];
-  const h   = pl.host;
-  const frs = pl.friends.filter(f => f.joined);
-  const all = [h, ...frs];
-  const zone = pl.zone || ZONES[0];
-  const dest = zone + ', Delhi';
+  const slots = plan.slots;
+  const zone  = plan.zone;
+  const dest  = zone + ', Delhi';
 
-  // Fetch real travel times (or fall back to static estimates)
-  showLoader(gMapsReady ? 'Getting real travel times from Google Maps…' : 'Building your plan…');
-  const comms = await Promise.all(
-    all.map(p => getRealTravelTime(p.loc || dest, dest, p.transport))
-  );
-  hideLoader();
+  let durations;
+  try {
+    const r = await fetch('/api/travel-time', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origins: slots.map(s => s.loc),
+        destination: dest,
+        modes: slots.map(s => s.transport)
+      })
+    });
+    const d = await r.json();
+    durations = d.durations;
+  } catch {
+    const fb = { driving:35, metro:27, bus:45, auto:38, walk:60 };
+    durations = slots.map(s => fb[s.transport] || 35);
+  }
 
-  const arrivals = all.map((p,i) => toMins(p.free) + comms[i]);
+  const arrivals = slots.map((s,i) => toMins(s.free) + durations[i]);
   const meetAt   = Math.max(...arrivals);
-  const leaveBy  = Math.min(...all.map((p,i) => toMins(p.back) - comms[i]));
+  const leaveBy  = Math.min(...slots.map((s,i) => toMins(s.back) - durations[i]));
   const togMins  = Math.max(0, leaveBy - meetAt);
   const togHrs   = (togMins/60).toFixed(1);
 
-  // Hero stats
   document.getElementById('r-zone').textContent = zone;
-  document.getElementById('r-sub').textContent  = `Best midpoint for all ${all.length} — traffic-adjusted for ${toStr(meetAt)}`;
-  document.getElementById('r-t1').textContent   = `${comms[0]} min`;
-  document.getElementById('r-n1').textContent   = h.name;
-  document.getElementById('r-m1').textContent   = `${TI[h.transport]} ${TL[h.transport]}`;
-  document.getElementById('r-tog').textContent  = `${togHrs} hrs`;
+  document.getElementById('r-sub').textContent  = `Best midpoint for all ${slots.length} · meet at ${toStr(meetAt)}`;
+  document.getElementById('r-t1').textContent   = `${durations[0]} min`;
+  document.getElementById('r-n1').textContent   = slots[0].name;
+  document.getElementById('r-m1').textContent   = `${TI[slots[0].transport]} ${TL[slots[0].transport]}`;
+  document.getElementById('r-tog').textContent  = `${togHrs}h`;
   document.getElementById('r-win').textContent  = `${toStr(meetAt)} – ${toStr(leaveBy)}`;
-  if (frs[0]) {
-    document.getElementById('r-t2').textContent = `${comms[1]} min`;
-    document.getElementById('r-n2').textContent = frs[0].name;
-    document.getElementById('r-m2').textContent = `${TI[frs[0].transport]} ${TL[frs[0].transport]}`;
+  if (slots[1]) {
+    document.getElementById('r-t2').textContent = `${durations[1]} min`;
+    document.getElementById('r-n2').textContent = slots[1].name;
+    document.getElementById('r-m2').textContent = `${TI[slots[1].transport]} ${TL[slots[1].transport]}`;
   }
 
-  // Avatars in topbar
-  document.getElementById('res-avatars').innerHTML = all.map((p,i) =>
-    `<div style="width:27px;height:27px;border-radius:50%;background:${CLR[i%CLR.length]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border:2px solid var(--bg);margin-left:${i?'-6px':'0'}">${p.name[0].toUpperCase()}</div>`
+  document.getElementById('res-avatars').innerHTML = slots.map((s,i) =>
+    `<div style="width:27px;height:27px;border-radius:50%;background:${CLR[i%CLR.length]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border:2px solid var(--bg);margin-left:${i?'-6px':'0'}">${s.name[0].toUpperCase()}</div>`
   ).join('');
 
-  // Commute cards
-  document.getElementById('r-ccards').innerHTML = all.map((p,i) => `
+  document.getElementById('r-ccards').innerHTML = slots.map((s,i) => `
     <div class="ccard">
-      <div class="cchd"><div class="ccdot" style="background:${CLR[i%CLR.length]}"></div><div class="ccnm">${p.name}</div></div>
-      <div class="cctrans">${TI[p.transport]} ${TL[p.transport]}</div>
-      <div class="ccrow"><span class="rl">From</span><span class="rv">${(p.loc||'').split(',')[0]||'—'}</span></div>
-      <div class="ccrow"><span class="rl">Leaves at</span><span class="rv">${toStr(toMins(p.free))}</span></div>
-      <div class="ccrow"><span class="rl">Travel time</span><span class="rv">~${comms[i]} min</span></div>
+      <div class="cchd"><div class="ccdot" style="background:${CLR[i%CLR.length]}"></div><div class="ccnm">${s.name}</div></div>
+      <div class="cctrans">${TI[s.transport]} ${TL[s.transport]}</div>
+      <div class="ccrow"><span class="rl">From</span><span class="rv">${(s.loc||'').split(',')[0]||'—'}</span></div>
+      <div class="ccrow"><span class="rl">Leaves at</span><span class="rv">${toStr(toMins(s.free))}</span></div>
+      <div class="ccrow"><span class="rl">Travel</span><span class="rv">~${durations[i]} min</span></div>
       <div class="ccrow"><span class="rl">Arrives</span><span class="rv">${toStr(arrivals[i])}</span></div>
-      <div class="ccrow"><span class="rl">Leave by</span><span class="rv">${toStr(toMins(p.back)-comms[i])}</span></div>
+      <div class="ccrow"><span class="rl">Leave by</span><span class="rv">${toStr(toMins(s.back)-durations[i])}</span></div>
     </div>`).join('');
 
-  // AI insight
   const tip = togMins < 90
     ? `⚡ Window is tight — go for <strong>drinks or coffee</strong> rather than a full dinner.`
     : `Plenty of time for a proper <strong>dinner + drinks</strong>. 🥂`;
   document.getElementById('r-ai').innerHTML =
-    `Best midpoint for all ${all.length} is <strong>${zone}</strong>. ` +
-    all.map((p,i) => `${p.name} takes ${comms[i]} min by ${TL[p.transport].toLowerCase()}`).join(', ') +
+    `Best midpoint for all ${slots.length} is <strong>${zone}</strong>. ` +
+    slots.map((s,i) => `${s.name} takes ~${durations[i]} min by ${TL[s.transport].toLowerCase()}`).join(', ') +
     `. You have <strong>${togHrs} hours</strong> together (${toStr(meetAt)} – ${toStr(leaveBy)}). ${tip}`;
 
-  // Place cards
-  const pls = DB[zone] || DB['Hauz Khas Village'];
-  document.getElementById('r-places').innerHTML = pls.map((p,i) => `
-    <div class="plcard" style="animation-delay:${.08+i*.07}s">
-      <div class="plcin">
-        <div class="plem">${p.e}</div>
-        <div class="plbd">
-          <div class="plhd"><div class="plnm">${p.n}</div>${p.b ? `<span class="badge ${p.b}">${p.bl}</span>` : ''}</div>
-          <div class="plcu">${p.c}</div>
-          <div class="plt">${all.map((person,pi) =>
-            `<div class="ptc"><div class="ptd" style="background:${CLR[pi%CLR.length]}"></div>${person.name.split(' ')[0]}: ~${comms[pi]+Math.floor(Math.random()*5-2)} min</div>`
-          ).join('')}</div>
-        </div>
-        <div class="plr">
-          <div class="plrt"><span class="star">★</span>${p.r}</div>
-          <div class="plpr">${p.p} · ${p.rv.toLocaleString()}</div>
-          <button class="svbtn ${S.saved.has(p.n)?'saved':''}" onclick="toggleSave(event,'${p.n}',this)">${S.saved.has(p.n)?'♥':'♡'}</button>
-        </div>
-      </div>
-      <div class="pltgs">${p.tg.map(t=>`<span class="ptag">${t}</span>`).join('')}</div>
-    </div>`).join('');
+  showLoad('Finding the best spots…');
+  let places = [];
+  try {
+    const city = (zone.includes('Gurgaon') || zone.includes('Noida')) ? 'Delhi NCR' : 'Delhi';
+    const r = await fetch(`/api/recommendations?area=${encodeURIComponent(zone)}&city=${encodeURIComponent(city)}`);
+    places = await r.json();
+  } catch { places = []; }
 
+  document.getElementById('r-places').innerHTML = places.length
+    ? places.map((p,i) => {
+        const bc = BADGE_CLS[p.badge] || '';
+        return `<div class="plcard" style="animation-delay:${.08+i*.07}s">
+          <div class="plcin">
+            <div class="plem">${p.emoji || '🍽'}</div>
+            <div class="plbd">
+              <div class="plhd">
+                <div class="plnm">${p.name}</div>
+                ${p.badge ? `<span class="badge ${bc}">${p.badge}</span>` : ''}
+              </div>
+              <div class="plcu">${p.cuisine || ''}</div>
+              <div class="plt">${slots.map((s,si) =>
+                `<div class="ptc"><div class="ptd" style="background:${CLR[si%CLR.length]}"></div>${s.name.split(' ')[0]}: ~${durations[si]+Math.floor(Math.random()*4-2)} min</div>`
+              ).join('')}</div>
+            </div>
+            <div class="plr">
+              <div class="plrt"><span class="star">★</span>${p.rating}</div>
+              <div class="plpr">${p.price_range} · ${(p.review_count||0).toLocaleString()}</div>
+              <button class="svbtn ${S.saved.has(p.name)?'saved':''}" onclick="toggleSave(event,'${p.name}',this)">${S.saved.has(p.name)?'♥':'♡'}</button>
+            </div>
+          </div>
+          <div class="pltgs">${(p.tags||[]).map(t=>`<span class="ptag">${t}</span>`).join('')}</div>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--mu2);font-size:13px;text-align:center;padding:20px 0">No spots found for this area yet.</p>';
+
+  hideLoad();
   go('s-results');
 }
 
@@ -1078,63 +828,55 @@ function toggleSave(e, n, btn) {
   else { S.saved.add(n); btn.textContent='♥'; btn.classList.add('saved'); toast(`Saved ${n}!`); }
 }
 
-// ══════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3200);
+// ─────────────────────────────────────
+// ROUTE TO PLAN
+// ─────────────────────────────────────
+function routeToPlan(plan) {
+  S.code = plan.code;
+  if (!recentCodes.includes(S.code)) { recentCodes.unshift(S.code); saveRecent(); }
+
+  const allJoined = plan.slots.every(s => s.joined);
+  if (allJoined) { buildResults(plan); return; }
+
+  const alreadyJoined = joinedCodes.includes(plan.code);
+  if (alreadyJoined) {
+    renderWaiting(plan);
+    startRealtime(plan.code);
+    go('s-waiting');
+  } else {
+    document.getElementById('inv-av').textContent  = plan.host.name[0].toUpperCase();
+    document.getElementById('inv-ttl').textContent = `${plan.host.name} invited you to a meetup!`;
+    document.querySelectorAll('#ft .tbtn').forEach(b => b.classList.remove('on'));
+    document.querySelector('#ft [data-v="metro"]').classList.add('on');
+    S.fTransport = 'metro';
+    startRealtime(plan.code);
+    go('s-friend');
+  }
 }
 
-// ══════════════════════════════════════
-// STARTUP — read URL hash for friend link
-// ══════════════════════════════════════
-(function init() {
-  initAPIKey();
-  const hash = window.location.hash;
-  if (hash && hash.startsWith('#plan=')) {
+// ─────────────────────────────────────
+// STARTUP
+// ─────────────────────────────────────
+(async function init() {
+  showLoad('Loading…');
+  const match = window.location.pathname.match(/\/plan\/([A-Za-z0-9]{6})/);
+  if (match) {
+    const code = match[1].toUpperCase();
     try {
-      const pl = urlToPlan(hash);
-
-      // Check if we already have this plan locally
-      let idx = plans.findIndex(p => p.code === pl.code);
-      if (idx === -1) {
-        plans.push(pl);
-        idx = plans.length - 1;
-        savePlans();
-      } else {
-        // Refresh with latest data from URL
-        plans[idx].host    = pl.host;
-        plans[idx].friends = pl.friends;
-        plans[idx].zone    = pl.zone;
-        savePlans();
-      }
-      S.planId = idx;
-
-      // Clean hash from address bar (no reload)
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-
-      const allJoined = pl.friends.length > 0 && pl.friends.every(f => f.joined);
-      if (allJoined) {
-        // Plan complete — show results
-        buildResults();
-      } else {
-        // Drop the visitor into the friend form
-        document.getElementById('inv-av').textContent  = pl.host.name[0].toUpperCase();
-        document.getElementById('inv-ttl').textContent = `${pl.host.name} invited you to a meetup!`;
-        document.querySelectorAll('#ft .tbtn').forEach(b => b.classList.remove('on'));
-        document.querySelector('#ft [data-v="metro"]').classList.add('on');
-        S.fTransport = 'metro';
-        go('s-friend');
-      }
+      const res  = await fetch(`/api/plans?code=${code}`);
+      if (!res.ok) throw new Error();
+      const plan = await res.json();
+      hideLoad();
+      routeToPlan(plan);
       return;
-    } catch(err) {
-      console.warn('Could not decode plan from URL:', err);
+    } catch {
+      hideLoad();
+      toast('Plan not found or expired');
     }
   }
-  // Normal load — show dashboard
+  hideLoad();
   renderHome();
+  go('s-home');
 })();
 </script>
 </body>
